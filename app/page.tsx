@@ -1,6 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 
 export default function Page() {
   const socials = [
@@ -9,6 +11,38 @@ export default function Page() {
     { name: "Spotify", href: "https://open.spotify.com/artist/4BuV2AebipXpU6TVkpxbWM" },
     { name: "TikTok", href: "https://tiktok.com/@nikflamboyant" },
   ];
+
+  const isReleased = false;
+
+  const [showPresave, setShowPresave] = useState(false);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handlePresaveSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setLoading(true);
+
+    const { error } = await supabase.from("emails").insert([{ email }]);
+
+    setLoading(false);
+
+    if (!error) {
+      setEmail("");
+      setSuccess(true);
+    } else {
+      console.error(error);
+    }
+  };
+
+  const closePresave = () => {
+    setShowPresave(false);
+    setSuccess(false);
+    setEmail("");
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
@@ -26,7 +60,7 @@ export default function Page() {
             Nik Flamboyant
           </div>
 
-          <nav className="hidden gap-8 text-sm uppercase tracking-[0.28em] text-white/60 md:flex">
+          <nav className="flex gap-5 text-[11px] uppercase tracking-[0.24em] text-white/60 md:gap-8 md:text-sm md:tracking-[0.28em]">
             <a href="#music" className="transition hover:text-white">
               Music
             </a>
@@ -55,34 +89,65 @@ export default function Page() {
                   Sybarite
                 </p>
                 <p className="text-sm font-medium uppercase tracking-[0.4em] text-white/88 md:text-xl">
-                  Out Now
+                  {isReleased ? "Out Now" : "Upcoming"}
                 </p>
               </div>
 
               <div className="mt-10 flex flex-wrap justify-center gap-4">
-                <motion.a
-                  href="#music"
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                  className="group relative overflow-hidden rounded-full border border-white/15 px-10 py-4 text-sm font-medium uppercase tracking-[0.28em] text-white transition hover:border-white/50"
-                >
-                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
-                  <span className="relative z-10">Listen</span>
-                </motion.a>
+                {isReleased ? (
+                  <>
+                    <motion.a
+                      href="#music"
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      className="group relative overflow-hidden rounded-full border border-white/15 px-10 py-4 text-sm font-medium uppercase tracking-[0.28em] text-white transition hover:border-white/50"
+                    >
+                      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                      <span className="relative z-10">Listen</span>
+                    </motion.a>
 
-                <motion.a
-                  href="https://youtube.com/@nikflamboyant"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                  className="group relative overflow-hidden rounded-full border border-white/15 px-10 py-4 text-sm font-medium uppercase tracking-[0.28em] text-white transition hover:border-white/50"
-                >
-                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
-                  <span className="relative z-10">Watch</span>
-                </motion.a>
+                    <motion.a
+                      href="https://youtube.com/@nikflamboyant"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      className="group relative overflow-hidden rounded-full border border-white/15 px-10 py-4 text-sm font-medium uppercase tracking-[0.28em] text-white transition hover:border-white/50"
+                    >
+                      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                      <span className="relative z-10">Watch</span>
+                    </motion.a>
+                  </>
+                ) : (
+                  <>
+                    <motion.button
+                      type="button"
+                      onClick={() => setShowPresave(true)}
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      className="group relative overflow-hidden rounded-full border border-white/15 px-10 py-4 text-sm font-medium uppercase tracking-[0.28em] text-white transition hover:border-white/50"
+                    >
+                      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                      <span className="relative z-10">Presave</span>
+                    </motion.button>
+
+                    <motion.a
+                      href="https://youtube.com/@nikflamboyant"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      className="group relative overflow-hidden rounded-full border border-white/15 px-10 py-4 text-sm font-medium uppercase tracking-[0.28em] text-white transition hover:border-white/50"
+                    >
+                      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                      <span className="relative z-10">Watch</span>
+                    </motion.a>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
@@ -102,6 +167,61 @@ export default function Page() {
             </div>
           </motion.div>
         </section>
+
+        <AnimatePresence>
+          {showPresave && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-sm rounded-[1.6rem] border border-white/15 bg-black p-8 text-center"
+              >
+                <p className="text-sm uppercase tracking-[0.4em] text-white/70 mb-6">
+                  Get Access
+                </p>
+
+                {success ? (
+                  <p className="text-sm uppercase tracking-[0.3em] text-white/80">
+                    You&apos;re in.
+                  </p>
+                ) : (
+                  <form onSubmit={handlePresaveSubmit} className="flex flex-col gap-4">
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-transparent border border-white/20 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/60"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full border border-white px-4 py-3 text-xs uppercase tracking-[0.3em] hover:bg-white hover:text-black transition disabled:opacity-60"
+                    >
+                      {loading ? "..." : "Join"}
+                    </button>
+                  </form>
+                )}
+
+                <button
+                  type="button"
+                  onClick={closePresave}
+                  className="mt-6 text-xs uppercase tracking-[0.3em] text-white/50 transition hover:text-white"
+                >
+                  Close
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <motion.footer
